@@ -81,30 +81,39 @@ app.put("/posts/:id", function (req, res) {
   // get post id from url params (`req.params`)
   var postId = req.params.id;
 
-  // find post in db by id
-  Post.findOne({ _id: postId, }, function (err, foundPost) {
-    if (err) {
-      res.status(500).json({ error: err.message, });
-    } else {
-      // update the posts's attributes
-      foundPost.title = req.body.title || foundPost.title;
-      foundPost.description = req.body.description || foundPost.description;
+  if (req.user)
+  {  // find post in db by id
+    Post.findOne({ _id: postId, }, function (err, foundPost) {
+      if (err) {
+        res.status(500).json({ error: err.message, });
+      } else {
+        // update the posts's attributes
+        foundPost.title = req.body.title || foundPost.title;
+        foundPost.description = req.body.description || foundPost.description;
 
-      // save updated post in db
-      foundPost.save(function (err, savedPost) {
-        if (err) {
-          res.status(500).json({ error: err.message, });
-        } else {
-          res.redirect("/posts/" + savedPost._id);
-        }
-      });
-    }
-  });
+        // save updated post in db
+        foundPost.save(function (err, savedPost) {
+          if (err) {
+            res.status(500).json({ error: err.message, });
+          } else {
+            res.redirect("/posts/" + savedPost._id);
+          }
+        });
+      }
+    });
+  }
+  else {
+    res.status(401).send({error: "Not Authorized! Please login first."})
+  }
+
 });
 
 
 // delete post
 app.delete("/posts/:id", function (req, res) {
+  if (!req.user) {
+   return res.sendStatus(401);
+}
   // get post id from url params (`req.params`)
   var postId = req.params.id;
 
@@ -230,8 +239,8 @@ app.get("/login", function (req, res){
 // log in user
 app.post('/login', passport.authenticate('local'), function (req, res) {
   console.log(req.user);
-  res.send('logged in!!!'); // sanity check
-  // res.redirect('/'); // preferred!
+  // res.send('logged in!!!'); // sanity check
+  res.redirect('/'); // preferred!
 });
 
 // log out user
