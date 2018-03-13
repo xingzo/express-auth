@@ -24,6 +24,19 @@
   <title>Express Microblog App</title>
 </head>
 <body>
+  <nav>
+
+
+    <% if(!user) { %>
+  <a href="/login">Log in</a>
+  <a href="/signup">Sign up</a>
+<% } else { %>
+  <div>Welcome, <%= user.username %>!</div>
+  <a href="/logout">Log out</a>
+<% } %>
+
+</nav>
+
 
   <!-- header -->
   <div class="well">

@@ -48,7 +48,7 @@ app.get("/", function (req, res) {
     if (err) {
       res.status(500).json({ error: err.message, });
     } else {
-      res.render("index", { posts: allPosts, });
+      res.render("index", { posts: allPosts, user: req.user, });
     }
   });
 });
@@ -213,14 +213,34 @@ app.get("/signup", function (req, res){
 })
 
 app.post("/signup", function (req, res){
-  User.register(new User({ username: req.body.username }), req.body.password,
+  User.register(new User({ username: req.body.username, admin: req.body.admin }), req.body.password,
   function (err, newUser) {
     passport.authenticate('local')(req, res, function() {
-      res.send('signed up!!!');
+      res.redirect('/');
     });
   }
 );
 })
+
+//show login view
+app.get("/login", function (req, res){
+  res.render('login');
+})
+
+// log in user
+app.post('/login', passport.authenticate('local'), function (req, res) {
+  console.log(req.user);
+  res.send('logged in!!!'); // sanity check
+  // res.redirect('/'); // preferred!
+});
+
+// log out user
+app.get('/logout', function (req, res) {
+  console.log("BEFORE logout", JSON.stringify(req.user));
+  req.logout();
+  console.log("AFTER logout", JSON.stringify(req.user));
+  res.redirect('/');
+});
 
 
 // listen on port 3000
