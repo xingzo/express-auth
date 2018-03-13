@@ -1,11 +1,19 @@
 // require express and other modules
 var express = require("express"),
-  app = express(),
-  bodyParser = require("body-parser"),
-  methodOverride = require("method-override");
+    app = express(),
+    bodyParser = require("body-parser"),
+    methodOverride = require("method-override");
+
+    //  NEW ADDITIONS
+    cookieParser = require('cookie-parser'),
+    session = require('express-session'),
+    passport = require('passport'),
+    LocalStrategy = require('passport-local').Strategy;
+
 // require Post model
 var db = require("./models"),
   Post = db.Post;
+  User = db.User;
 
 // configure bodyParser (for receiving form data)
 app.use(bodyParser.urlencoded({ extended: true, }));
@@ -18,6 +26,20 @@ app.set("view engine", "ejs");
 
 app.use(methodOverride("_method"));
 
+// middleware for auth
+app.use(cookieParser());
+app.use(session({
+  secret: 'dolphinsintexas', // change this!
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// passport config
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 // HOMEPAGE ROUTE
 
@@ -181,6 +203,24 @@ app.delete("/api/posts/:id", function (req, res) {
     }
   });
 });
+
+
+// AUTH ROUTES
+
+//signup
+app.get("/signup", function (req, res){
+  res.render('signup');
+})
+
+app.post("/signup", function (req, res){
+  User.register(new User({ username: req.body.username }), req.body.password,
+  function (err, newUser) {
+    passport.authenticate('local')(req, res, function() {
+      res.send('signed up!!!');
+    });
+  }
+);
+})
 
 
 // listen on port 3000
