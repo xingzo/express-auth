@@ -44,6 +44,10 @@ passport.deserializeUser(User.deserializeUser());
 // HOMEPAGE ROUTE
 
 app.get("/", function (req, res) {
+
+  if (!req.user) {
+   return res.redirect("/login");
+  }
   Post.find(function (err, allPosts) {
     if (err) {
       res.status(500).json({ error: err.message, });
@@ -64,6 +68,10 @@ app.get("/posts/:id", function(req, res) {
 });
 
 app.post("/posts", function(req, res) {
+
+  if (!req.user) {
+   return res.redirect("/login");
+  }
   var newPost = new Post(req.body);
 
   // save new post in db
@@ -113,7 +121,7 @@ app.put("/posts/:id", function (req, res) {
 app.delete("/posts/:id", function (req, res) {
   if (!req.user) {
    return res.sendStatus(401);
-}
+ }
   // get post id from url params (`req.params`)
   var postId = req.params.id;
 
